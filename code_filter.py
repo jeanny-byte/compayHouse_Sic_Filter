@@ -709,14 +709,28 @@ def save_filtered_data(target_data, sic_code_to_name):
         # Check if the file already exists in the "Results" folder
         existing_file_path = os.path.join("Results", filename)
         if os.path.exists(existing_file_path):
-            # If the file exists, load the existing CSV data
-            existing_df = pd.read_csv(existing_file_path)
-            # Concatenate the existing data with the new data
-            new_df = pd.DataFrame(rows)
-            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-            # Save the combined data back to the existing file
-            combined_df.to_csv(existing_file_path, index=False)
-            print(f"Appended filtered data for target: {name} to {existing_file_path}")
+            try:
+                # If the file exists, load the existing CSV data in chunks
+                existing_df_chunks = pd.read_csv(existing_file_path, chunksize=1000, low_memory=False)
+                existing_chunks = [chunk for chunk in existing_df_chunks]
+                if all(chunk.empty for chunk in existing_chunks):
+                    # If the existing file is empty, simply overwrite it with new data
+                    new_df = pd.DataFrame(rows)
+                    new_df.to_csv(existing_file_path, index=False)
+                    print(f"Saved filtered data for target: {name} in {existing_file_path}")
+                else:
+                    # Concatenate the existing data chunks with the new data
+                    new_df = pd.DataFrame(rows)
+                    combined_chunks = existing_chunks + [new_df]
+                    combined_df = pd.concat(combined_chunks, ignore_index=True)
+                    # Save the combined data back to the existing file
+                    combined_df.to_csv(existing_file_path, index=False)
+                    print(f"Appended filtered data for target: {name} to {existing_file_path}")
+            except pd.errors.EmptyDataError:
+                # Handle the case where the existing file is empty or corrupted
+                new_df = pd.DataFrame(rows)
+                new_df.to_csv(existing_file_path, index=False)
+                print(f"Saved filtered data for target: {name} in {existing_file_path}")
         else:
             # If the file doesn't exist, save the new data as a separate file
             file_path = existing_file_path
@@ -728,6 +742,6 @@ def save_filtered_data(target_data, sic_code_to_name):
 
 if __name__ == "__main__":
     # The actual path to CSV file
-    csv_file_path = 'BasicCompanyData-2023-10-04-part1_7.csv'
+    csv_file_path = 'BasicCompanyData-2023-10-04-part6_7.csv'
 
     process_csv(csv_file_path, main_target_numbers, chunk_size=1000)
