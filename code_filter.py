@@ -1,13 +1,11 @@
 import pandas as pd
-from tqdm import tqdm  # Import tqdm for progress bar
+from tqdm import tqdm
+import ast  # Import the ast module
 
-# Create a dictionary mapping SIC codes to human-readable names
-sic_code_to_name = {
-    91009900: "Farming and Fishing",
-    10110101: "Agriculture",
-    20101301: "Fisheries",
-    # Add more SIC codes and names as needed
-}
+# Read and parse the `sic_code_to_name` variable from the text file
+with open('sic_codes.txt', 'r') as text_file:
+    sic_code_to_name_str = text_file.read()
+    sic_code_to_name = ast.literal_eval(sic_code_to_name_str)
 
 # Modify the main_target_numbers to use SIC codes
 main_target_numbers = list(sic_code_to_name.keys())
