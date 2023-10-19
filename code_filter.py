@@ -1,5 +1,6 @@
 import pandas as pd
 from tqdm import tqdm  # Import tqdm for progress bar
+import os
 
 # Create a dictionary mapping SIC codes to human-readable names
 sic_code_to_name = {
@@ -681,9 +682,11 @@ def process_csv(file_path, target_numbers, chunk_size=1000):
     save_filtered_data(target_data, sic_code_to_name)
 
 
+import os
+
 def save_filtered_data(target_data, sic_code_to_name):
     """
-    Save the filtered data to separate CSV files with SIC codes in the filename.
+    Save the filtered data to separate CSV files with SIC codes and descriptions in the filename.
 
     Parameters:
         target_data (dict): Dictionary containing the filtered data for each target number.
@@ -692,22 +695,40 @@ def save_filtered_data(target_data, sic_code_to_name):
     Returns:
         None
     """
+    # Create the "Results" folder if it doesn't exist
+    if not os.path.exists("Results"):
+        os.mkdir("Results")
+
     for sic_code, rows in target_data.items():
+        name = sic_code_to_name.get(sic_code, f"SIC_Code_{sic_code}")
+        # Remove characters that are not suitable for file names
+        name = name.replace(" ", "_").replace(",", "").replace(".", "")
         if len(target_data) == 1:
-            # If only one SIC code was used, save the file as SIC_Code_Human-Readable-Name.csv
-            name = sic_code_to_name.get(sic_code, f"SIC_Code_{sic_code}")
-            filename = f"{sic_code}_{name}.csv"
+            filename = f"{sic_code}_{name}_filtered_worksheet.csv"
         else:
-            # If multiple SIC codes were used, save the file with a common name
-            name = "Filtered_Worksheet.csv"
-            filename = name
+            filename = f"{sic_code}_{name}_filtered_worksheet.csv"
+        
+        # Check if the file already exists in the "Results" folder
+        while os.path.exists(os.path.join("Results", filename)):
+            # If the file exists, add a number to the filename to make it unique
+            base, ext = os.path.splitext(filename)
+            parts = base.split("_")
+            if parts[-1].isnumeric():
+                parts[-1] = str(int(parts[-1]) + 1)
+            else:
+                parts.append("1")
+            filename = "_".join(parts) + ext
+
+        # Save the file in the "Results" folder
+        file_path = os.path.join("Results", filename)
         df = pd.DataFrame(rows)
-        df.to_csv(filename, index=False)
-        print(f"Saved filtered data for target: {name} in {filename}")
+        df.to_csv(file_path, index=False)
+        print(f"Saved filtered data for target: {name} in {file_path}")
+
 
 
 if __name__ == "__main__":
     # The actual path to CSV file
-    csv_file_path = 'BasicCompanyDataAsOneFile-2023-10-04.csv'
+    csv_file_path = 'BasicCompanyData-2023-10-04-part1_7.csv'
 
     process_csv(csv_file_path, main_target_numbers, chunk_size=1000)
