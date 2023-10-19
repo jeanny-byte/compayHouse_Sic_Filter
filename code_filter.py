@@ -682,8 +682,6 @@ def process_csv(file_path, target_numbers, chunk_size=1000):
     save_filtered_data(target_data, sic_code_to_name)
 
 
-import os
-
 def save_filtered_data(target_data, sic_code_to_name):
     """
     Save the filtered data to separate CSV files with SIC codes and descriptions in the filename.
@@ -707,23 +705,24 @@ def save_filtered_data(target_data, sic_code_to_name):
             filename = f"{sic_code}_{name}_filtered_worksheet.csv"
         else:
             filename = f"{sic_code}_{name}_filtered_worksheet.csv"
-        
-        # Check if the file already exists in the "Results" folder
-        while os.path.exists(os.path.join("Results", filename)):
-            # If the file exists, add a number to the filename to make it unique
-            base, ext = os.path.splitext(filename)
-            parts = base.split("_")
-            if parts[-1].isnumeric():
-                parts[-1] = str(int(parts[-1]) + 1)
-            else:
-                parts.append("1")
-            filename = "_".join(parts) + ext
 
-        # Save the file in the "Results" folder
-        file_path = os.path.join("Results", filename)
-        df = pd.DataFrame(rows)
-        df.to_csv(file_path, index=False)
-        print(f"Saved filtered data for target: {name} in {file_path}")
+        # Check if the file already exists in the "Results" folder
+        existing_file_path = os.path.join("Results", filename)
+        if os.path.exists(existing_file_path):
+            # If the file exists, load the existing CSV data
+            existing_df = pd.read_csv(existing_file_path)
+            # Concatenate the existing data with the new data
+            new_df = pd.DataFrame(rows)
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+            # Save the combined data back to the existing file
+            combined_df.to_csv(existing_file_path, index=False)
+            print(f"Appended filtered data for target: {name} to {existing_file_path}")
+        else:
+            # If the file doesn't exist, save the new data as a separate file
+            file_path = existing_file_path
+            df = pd.DataFrame(rows)
+            df.to_csv(file_path, index=False)
+            print(f"Saved filtered data for target: {name} in {file_path}")
 
 
 
