@@ -742,6 +742,6 @@ def save_filtered_data(target_data, sic_code_to_name):
 
 if __name__ == "__main__":
     # The actual path to CSV file
-    csv_file_path = 'BasicCompanyData-2023-10-04-part6_7.csv'
+    csv_file_path = 'BasicCompanyData-2023-10-04-part7_7.csv'
 
     process_csv(csv_file_path, main_target_numbers, chunk_size=1000)
