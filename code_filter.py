@@ -653,7 +653,7 @@ def process_csv(file_path, target_numbers, chunk_size=1000):
     """
     # Create a dictionary to store data for each target number
     target_data = {number: [] for number in target_numbers}
-    processed_rows = 0  # Initialize a counter for processed rows
+    processed_rows = 0 
 
     # Calculate the total number of rows in the CSV file
     total_rows = sum(1 for _ in open(file_path))
@@ -742,6 +742,6 @@ def save_filtered_data(target_data, sic_code_to_name):
 
 if __name__ == "__main__":
     # The actual path to CSV file
-    csv_file_path = 'BasicCompanyData-2023-10-04-part7_7.csv'
+    csv_file_path = 'BasicCompanyDataAsOneFile-2023-10-04.csv'
 
     process_csv(csv_file_path, main_target_numbers, chunk_size=1000)
